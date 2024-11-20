@@ -64,6 +64,6 @@ io.on('connection', (socket) => {
 
 // Start the server (both HTTP and WebSocket)
 const PORT = 4000;
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`WebSocket and PeerJS server running at http://localhost:${PORT}`);
 });
