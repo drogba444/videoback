@@ -8,14 +8,18 @@ const app = express();
 const server = http.createServer(app);
 
 // Enable CORS to allow connections from the frontend
-app.use(cors({
-  origin: "https://your-frontend-url.com", // Replace with actual frontend URL
-  methods: ["GET", "POST"]
-}));
+const io = socketIo(server, {
+  cors: {
+    origin: "*", // Frontend URL
+    methods: ["GET", "POST"]
+  },
+ 
+});
 
 // Initialize PeerJS server for peer-to-peer connections
 const peerServer = PeerServer({
-  path: '/peerjs', // Default path for PeerJS
+  port: 9000, // PeerJS server port
+  path: '/peerjs' // Path for PeerJS connections
 });
 
 // Log when a PeerJS client connects
@@ -29,13 +33,6 @@ app.get('/', (req, res) => {
 });
 
 // Socket.io connection handler
-const io = socketIo(server, {
-  cors: {
-    origin: "*", // Allow all for now, but you can change this to specific domains
-    methods: ["GET", "POST"]
-  }
-});
-
 io.on('connection', (socket) => {
   console.log('A user connected:', socket.id);
 
@@ -60,7 +57,7 @@ io.on('connection', (socket) => {
   });
 });
 
-// Export server for Vercel
-module.exports = (req, res) => {
-  server(req, res);
-};
+// Start the server on port 4000
+server.listen(4000, () => {
+  console.log('Server running at https://videoback-beta.vercel.app');
+});
