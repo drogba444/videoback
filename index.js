@@ -1,45 +1,57 @@
 const express = require('express');
 const http = require('http');
-const WebSocket = require('ws');
+const { Server } = require('socket.io');
 const cors = require('cors');
 
+// Initialize the Express app
 const app = express();
 
-// Enable CORS for all origins
-app.use(cors('*'));
+// Enable CORS for all origins (use specific domains in production)
+app.use(cors("*"));
 
-// Define the API route
-app.get('/home', (req, res) => {
-  return res.status(200).json({ message: 'We are using now' });
+// Define the API route (Test Route)
+app.get("/home", (req, res) => {
+  return res.status(200).json({ message: "We are using now" });
 });
 
-// Set up HTTP server
+// Set up HTTP server to work with both Express and Socket.io
 const server = http.createServer(app);
 
-// Set up WebSocket server
-const wss = new WebSocket.Server({ server });
+// Set up the WebSocket server with Socket.io
+const io = new Server(server, {
+  cors: {
+    origin: "*", // Allow all origins (change to your frontend URL in production)
+    methods: ["GET", "POST"]
+  }
+});
 
-// WebSocket connection handler
-wss.on('connection', (ws) => {
-  console.log('A user connected');
+// Socket.io connection handler
+io.on('connection', (socket) => {
+  console.log('A user connected:', socket.id);
 
-  ws.on('message', (message) => {
-    console.log('Received message:', message);
-    // Broadcast the message to all clients
-    wss.clients.forEach((client) => {
-      if (client !== ws && client.readyState === WebSocket.OPEN) {
-        client.send(message);
-      }
-    });
+  // Handle signaling events (offer, answer, ice-candidate)
+  socket.on('offer', (offer) => {
+    console.log('Offer received:', offer);
+    socket.broadcast.emit('offer', offer);
   });
 
-  ws.on('close', () => {
+  socket.on('answer', (answer) => {
+    console.log('Answer received:', answer);
+    socket.broadcast.emit('answer', answer);
+  });
+
+  socket.on('ice-candidate', (candidate) => {
+    console.log('ICE candidate received:', candidate);
+    socket.broadcast.emit('ice-candidate', candidate);
+  });
+
+  socket.on('disconnect', () => {
     console.log('User disconnected');
   });
 });
 
 // Start the server (both HTTP and WebSocket)
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.PORT || 4000; // Use environment variable for the port if available
 server.listen(PORT, () => {
   console.log(`WebSocket server running at http://localhost:${PORT}`);
 });
