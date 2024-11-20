@@ -58,19 +58,15 @@ server.listen(PORT, () => {
 });
 
 // Initialize PeerJS server for peer-to-peer connections
-const peerServer = PeerServer({
-  port: 9000, // PeerJS server port
-  path: '/', // Path for PeerJS connections
-  cors: {
-    origin: "*", // Allow all origins (change to your frontend URL in production)
-    methods: ["GET", "POST"]
-  }
+const peerServer = PeerServer({// PeerJS server port
+  path: '/peerjs' // Path for PeerJS connections
 });
 
 // Log when a PeerJS client connects
 peerServer.on('connection', (client) => {
   console.log('PeerJS client connected:', client.id);
 });
+
 
 // Serve the frontend (optional)
 app.get('/api', (req, res) => {
