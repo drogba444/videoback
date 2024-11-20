@@ -53,7 +53,9 @@ io.on('connection', (socket) => {
     console.log('User disconnected');
   });
 });
-
+server.getConnections("/home",(req,res)=>{
+  return res.status(200).json({message: "We are using now"})
+})
 // Start the WebSocket server
 server.listen(4000, () => {
   console.log('WebSocket and PeerJS server running at http://localhost:4000');
