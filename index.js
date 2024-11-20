@@ -35,6 +35,10 @@ app.get('/', (req, res) => {
   res.send("hi we aare on live")
   // res.sendFile(__dirname + '/index.html');
 });
+app.get('/live', (req, res) => {
+  res.send("hi we aare on live")
+  // res.sendFile(__dirname + '/index.html');
+});
 // Handle socket connections for video call signaling
 io.on('connection', (socket) => {
   console.log('A user connected:', socket.id);
