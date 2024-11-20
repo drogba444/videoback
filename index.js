@@ -28,7 +28,7 @@ peerServer.on('connection', (client) => {
 });
 
 // Serve the frontend (optional)
-app.get('/', (req, res) => {
+app.get('/api', (req, res) => {
   res.send("Video call backend is live!");
 });
 
