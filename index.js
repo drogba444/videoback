@@ -8,7 +8,7 @@ const server = http.createServer(app);
 const io = socketIo(server);
 
 
-
+https://videoback-beta.vercel.app/?vercelToolbarCode=fwXPAO4QDQ6iWKB/
 
 
 // Enable CORS for your frontend's URL
@@ -32,9 +32,9 @@ peerServer.on('connection', (client) => {
 
 // Serve the frontend HTML (optional, you can serve your React app from here too)
 app.get('/', (req, res) => {
-  res.sendFile(__dirname + '/index.html');
+  res.send("hi we aare on live")
+  // res.sendFile(__dirname + '/index.html');
 });
-
 // Handle socket connections for video call signaling
 io.on('connection', (socket) => {
   console.log('A user connected:', socket.id);
