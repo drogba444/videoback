@@ -6,15 +6,16 @@ const cors = require('cors');
 
 const app = express();
 const server = http.createServer(app);
-const io = socketIo(server);
-
-// Enable CORS for your frontend's URL
-app.use(cors({
-  origin: '*', // You can set the exact frontend URL here if required
-}));
+const io = socketIo(server, {
+  cors: {
+    origin: "https://video-call-one-jet.vercel.app", // Your frontend URL
+    methods: ["GET", "POST"]
+  }
+});
 
 // Initialize PeerServer to generate unique peer IDs and handle connections
 const peerServer = PeerServer({
+  port: 9000, // Port for PeerJS server
   path: '/peerjs', // Path for PeerJS connections
 });
 
@@ -23,9 +24,9 @@ peerServer.on('connection', (client) => {
   console.log('PeerJS client connected: ', client.id); // Unique Peer ID
 });
 
-// Serve basic API response
+// Serve the frontend HTML (optional, you can serve your React app from here too)
 app.get('/', (req, res) => {
-  res.send("hi we are live");
+  res.send("hi we are on live")
 });
 
 // Handle socket connections for video call signaling
@@ -53,7 +54,7 @@ io.on('connection', (socket) => {
   });
 });
 
-// Export the function to Vercel as a serverless function
-module.exports = (req, res) => {
-  app(req, res); // Vercel-compatible function that calls Express
-};
+// Start the server on port 4000
+server.listen(4000, () => {
+  console.log('Server is running on https://videoback-beta.vercel.app');
+});
