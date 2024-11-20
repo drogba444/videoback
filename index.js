@@ -1,6 +1,7 @@
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
+const { PeerServer } = require('peer');
 const cors = require('cors');
 
 // Initialize the Express app
@@ -54,4 +55,24 @@ io.on('connection', (socket) => {
 const PORT = process.env.PORT || 4000; // Use environment variable for the port if available
 server.listen(PORT, () => {
   console.log(`WebSocket server running at http://localhost:${PORT}`);
+});
+
+// Initialize PeerJS server for peer-to-peer connections
+const peerServer = PeerServer({
+  port: 9000, // PeerJS server port
+  path: '/peerjs', // Path for PeerJS connections
+  cors: {
+    origin: "*", // Allow all origins (change to your frontend URL in production)
+    methods: ["GET", "POST"]
+  }
+});
+
+// Log when a PeerJS client connects
+peerServer.on('connection', (client) => {
+  console.log('PeerJS client connected:', client.id);
+});
+
+// Serve the frontend (optional)
+app.get('/api', (req, res) => {
+  res.send("Video call backend is live!");
 });
