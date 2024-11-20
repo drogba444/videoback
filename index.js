@@ -1,38 +1,31 @@
 const express = require('express');
 const http = require('http');
-const {Server} = require('socket.io');
+const { Server } = require('socket.io');
 const { PeerServer } = require('peer');
 const cors = require('cors');
 
+// Initialize the Express app
 const app = express();
 
+// Enable CORS for all origins (use specific domains in production)
+app.use(cors("*"));
+
+// Define the API route
 app.get("/home", (req, res) => {
   return res.status(200).json({ message: "We are using now" });
 });
-// Enable CORS to allow connections from frontend
-app.use(cors("*"));
 
-
-// Socket.io setup
-// const io = socketIo(server, {
-//   cors: {
-//     origin: "*", // Your frontend URL
-//     methods: ["GET", "POST"]
-//   }
-// });
-
-// PeerJS server setup
-const peerServer = PeerServer({
-  port: 9000, // PeerJS server port
-  path: '/peerjs' // Path for PeerJS connections
-});
-
-// Log when a PeerJS client connects
-peerServer.on('connection', (client) => {
-  console.log('PeerJS client connected:', client.id);
-});
+// Set up HTTP server to work with both Express and Socket.io
 const server = http.createServer(app);
-const io = new Server(server, { cors: { origin: "*" } });
+
+// Set up the WebSocket server with Socket.io
+const io = new Server(server, {
+  cors: {
+    origin: "*", // Allow all origins (change to your frontend URL in production)
+    methods: ["GET", "POST"]
+  }
+});
+
 // Socket.io connection handler
 io.on('connection', (socket) => {
   console.log('A user connected:', socket.id);
@@ -57,7 +50,20 @@ io.on('connection', (socket) => {
     console.log('User disconnected');
   });
 });
-// Start the WebSocket server
-server.listen(4000, () => {
-  console.log('WebSocket and PeerJS server running at http://localhost:4000');
+
+// Set up PeerJS server for peer-to-peer connections
+const peerServer = PeerServer({
+  port: 9000, // PeerJS server port
+  path: '/peerjs' // Path for PeerJS connections
+});
+
+// Log when a PeerJS client connects
+peerServer.on('connection', (client) => {
+  console.log('PeerJS client connected:', client.id);
+});
+
+// Start the server (both HTTP and WebSocket)
+const PORT = 4000;
+server.listen(PORT, () => {
+  console.log(`WebSocket and PeerJS server running at http://localhost:${PORT}`);
 });
