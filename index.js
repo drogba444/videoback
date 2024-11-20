@@ -1,22 +1,25 @@
 const express = require('express');
 const http = require('http');
-const socketIo = require('socket.io');
+const {Server} = require('socket.io');
 const { PeerServer } = require('peer');
 const cors = require('cors');
 
 const app = express();
 
+app.get("/home", (req, res) => {
+  return res.status(200).json({ message: "We are using now" });
+});
 // Enable CORS to allow connections from frontend
 app.use(cors("*"));
-const server = http.createServer(app);
+
 
 // Socket.io setup
-const io = socketIo(server, {
-  cors: {
-    origin: "*", // Your frontend URL
-    methods: ["GET", "POST"]
-  }
-});
+// const io = socketIo(server, {
+//   cors: {
+//     origin: "*", // Your frontend URL
+//     methods: ["GET", "POST"]
+//   }
+// });
 
 // PeerJS server setup
 const peerServer = PeerServer({
@@ -28,7 +31,8 @@ const peerServer = PeerServer({
 peerServer.on('connection', (client) => {
   console.log('PeerJS client connected:', client.id);
 });
-
+const server = http.createServer(app);
+const io = new Server(server, { cors: { origin: "*" } });
 // Socket.io connection handler
 io.on('connection', (socket) => {
   console.log('A user connected:', socket.id);
@@ -52,9 +56,6 @@ io.on('connection', (socket) => {
   socket.on('disconnect', () => {
     console.log('User disconnected');
   });
-});
-app.get("/home", (req, res) => {
-  return res.status(200).json({ message: "We are using now" });
 });
 // Start the WebSocket server
 server.listen(4000, () => {
