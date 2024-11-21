@@ -58,22 +58,33 @@ server.listen(PORT, () => {
   console.log(`WebSocket server running at http://localhost:${PORT}`);
 });
 
-// Initialize PeerJS server for peer-to-peer connections
-const peerServer = PeerServer({ 
-  path: '/peerjs',  // Path should be '/peerjs' to match frontend path
-  port: 4000, // Same port as Express server
-  secure: true,  // Enable secure connection for production (make sure your server supports https)
-  // Uncomment the lines below if you're using SSL certificates for https
-  // ssl: {
-  //   key: fs.readFileSync('path/to/private-key.pem'),
-  //   cert: fs.readFileSync('path/to/certificate.pem'),
-  // }
+// // Initialize PeerJS server for peer-to-peer connections
+// const peerServer = PeerServer({ 
+//   path: '/peerjs',  // Path should be '/peerjs' to match frontend path
+//   port: 4000, // Same port as Express server
+//   secure: true,  // Enable secure connection for production (make sure your server supports https)
+//   // Uncomment the lines below if you're using SSL certificates for https
+//   // ssl: {
+//   //   key: fs.readFileSync('path/to/private-key.pem'),
+//   //   cert: fs.readFileSync('path/to/certificate.pem'),
+//   // }
+// });
+
+// // Log when a PeerJS client connects
+// peerServer.on('connection', (client) => {
+//   console.log('PeerJS client connected:', client.id);
+// });
+
+const peerServer = ExpressPeerServer(server, {
+  path: "/",
 });
 
-// Log when a PeerJS client connects
+app.use("/peerjs", peerServer);
+
 peerServer.on('connection', (client) => {
   console.log('PeerJS client connected:', client.id);
 });
+
 
 // Serve the frontend (optional)
 app.get('/api', (req, res) => {
