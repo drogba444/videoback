@@ -7,68 +7,75 @@ const cors = require('cors');
 // Initialize the Express app
 const app = express();
 
-// Enable CORS for all origins (use specific domains in production)
-app.use(cors("*"));
+// Enable CORS
+app.use(cors());
 
-// Define the API route (Test Route)
-app.get("/home", (req, res) => {
-  return res.status(200).json({ message: "We are using now" });
+// Test API Route
+app.get('/home', (req, res) => {
+  res.status(200).json({ message: 'Server is live!' });
 });
 
-// Set up HTTP server to work with both Express and Socket.io
+// Set up the HTTP server
 const server = http.createServer(app);
 
 // Set up the WebSocket server with Socket.io
 const io = new Server(server, {
   cors: {
-    origin: "*", // Allow all origins (change to your frontend URL in production)
-    methods: ["GET", "POST"]
-  }
+    origin: '*', // Replace with your frontend's URL in production
+    methods: ['GET', 'POST'],
+  },
 });
+
+// Store active peer IDs
+const activePeers = new Set();
 
 // Socket.io connection handler
 io.on('connection', (socket) => {
   console.log('A user connected:', socket.id);
 
-  // Handle signaling events (offer, answer, ice-candidate)
-  socket.on('offer', (offer) => {
-    console.log('Offer received:', offer);
-    socket.broadcast.emit('offer', offer);
+  // Register a peer ID
+  socket.on('register-peer', (peerId) => {
+    activePeers.add(peerId);
+    console.log('Registered peer ID:', peerId);
   });
 
-  socket.on('answer', (answer) => {
-    console.log('Answer received:', answer);
-    socket.broadcast.emit('answer', answer);
+  // Forward signaling messages to the target peer
+  socket.on('offer', (data) => {
+    socket.broadcast.emit('offer', data);
   });
 
-  socket.on('ice-candidate', (candidate) => {
-    console.log('ICE candidate received:', candidate);
-    socket.broadcast.emit('ice-candidate', candidate);
+  socket.on('answer', (data) => {
+    socket.broadcast.emit('answer', data);
   });
 
+  socket.on('ice-candidate', (data) => {
+    socket.broadcast.emit('ice-candidate', data);
+  });
+
+  // Handle disconnection
   socket.on('disconnect', () => {
-    console.log('User disconnected');
+    console.log('User disconnected:', socket.id);
+    activePeers.delete(socket.id);
   });
 });
 
-// Start the server (both HTTP and WebSocket)
-const PORT = process.env.PORT || 4000; // Use environment variable for the port if available
+// Start the HTTP and WebSocket server
+const PORT = process.env.PORT || 4000;
 server.listen(PORT, () => {
-  console.log(`WebSocket server running at http://localhost:${PORT}`);
+  console.log(`Server is running on http://localhost:${PORT}`);
 });
 
-// Initialize PeerJS server for peer-to-peer connections
-const peerServer = PeerServer({// PeerJS server port
-  path: '/peerjs' // Path for PeerJS connections
+// Initialize the PeerJS server
+const peerServer = PeerServer({
+  port: 9000, // Adjust if needed
+  path: '/peerjs',
 });
 
-// Log when a PeerJS client connects
+// Handle PeerJS client connections
 peerServer.on('connection', (client) => {
   console.log('PeerJS client connected:', client.id);
 });
 
-
-// Serve the frontend (optional)
-app.get('/api', (req, res) => {
-  res.send("Video call backend is live!");
+peerServer.on('disconnect', (client) => {
+  console.log('PeerJS client disconnected:', client.id);
 });
